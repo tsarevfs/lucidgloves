@@ -1,3 +1,5 @@
+#include "gesture.h"
+
 #define ALWAYS_CALIBRATING CALIBRATION_LOOPS == -1
 
 ICommunication* comm;
@@ -22,7 +24,7 @@ void loop() {
   if (!comm->isOpen()){
     return;
   }
-   
+  
   #if USING_CALIB_PIN
   bool calibButton = getButton(PIN_CALIB) != INVERT_CALIB;
   if (calibButton)
@@ -39,31 +41,14 @@ void loop() {
   
   int* fingerPos = getFingerPositions(calibrate, calibButton);
   bool joyButton = getButton(PIN_JOY_BTN) != INVERT_JOY;
-
-  #if TRIGGER_GESTURE
-  bool triggerButton = triggerGesture(fingerPos);
-  #else
-  bool triggerButton = getButton(PIN_TRIG_BTN) != INVERT_TRIGGER;
-  #endif
-
+  
   bool aButton = getButton(PIN_A_BTN) != INVERT_A;
   bool bButton = getButton(PIN_B_BTN) != INVERT_B;
-
-  #if GRAB_GESTURE
-  bool grabButton = grabGesture(fingerPos);
-  #else
-  bool grabButton = getButton(PIN_GRAB_BTN) != INVERT_GRAB;
-  #endif
-
-  #if PINCH_GESTURE
-  bool pinchButton = pinchGesture(fingerPos);
-  #else
-  bool pinchButton = getButton(PIN_PNCH_BTN) != INVERT_PINCH;
-  #endif
-
   bool menuButton = getButton(PIN_MENU_BTN) != INVERT_MENU;
+
+  Gestures gestures = detectGestures(fingerPos);
   
-  comm->output(encode(fingerPos, getJoyX(), getJoyY(), joyButton, triggerButton, aButton, bButton, grabButton, pinchButton, calibButton, menuButton));
+  comm->output(encode(fingerPos, getJoyX(), getJoyY(), joyButton, gestures.trigger, aButton, bButton, gestures.grab, gestures.pinch, calibButton, menuButton));
 
   #if USING_FORCE_FEEDBACK
     char received[100];
