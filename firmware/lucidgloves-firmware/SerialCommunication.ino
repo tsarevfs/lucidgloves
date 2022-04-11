@@ -24,7 +24,7 @@ class SerialCommunication : public ICommunication {
 
     bool readData(char* input){
       byte size = Serial.readBytesUntil('\n', input, 100);
-      input[size] = NULL;
+      input[size] = 0;
       return input != NULL && strlen(input) > 0;
     }
 };
